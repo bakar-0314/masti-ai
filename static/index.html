@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Masti AI 😂</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Inter, Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, #3b0764, transparent 35%),
+                radial-gradient(circle at bottom right, #172554, transparent 35%),
+                #07070c;
+
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* MAIN APP */
+
+        .app {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 260px;
+            background: rgba(10, 10, 18, 0.85);
+            border-right: 1px solid rgba(255,255,255,0.08);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 21px;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: linear-gradient(
+                135deg,
+                #ff4ecd,
+                #7c3aed
+            );
+
+            font-size: 21px;
+        }
+
+        .new-chat {
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            color: white;
+
+            padding: 12px;
+            border-radius: 12px;
+
+            cursor: pointer;
+            font-size: 14px;
+
+            transition: 0.2s;
+        }
+
+        .new-chat:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            color: #8f8f9f;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* CHAT AREA */
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        /* HEADER */
+
+        .topbar {
+            height: 70px;
+
+            display: flex;
+            align-items: center;
+
+            padding: 0 30px;
+
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+
+            background: rgba(7,7,12,0.65);
+
+            backdrop-filter: blur(20px);
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+
+            background: #22c55e;
+
+            box-shadow:
+                0 0 12px #22c55e;
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: #b7b7c5;
+        }
+
+        /* MESSAGES */
+
+        .messages {
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 40px 20px 150px;
+
+            scroll-behavior: smooth;
+        }
+
+        .welcome {
+            max-width: 700px;
+
+            margin: 70px auto;
+
+            text-align: center;
+        }
+
+        .welcome-emoji {
+            font-size: 70px;
+
+            margin-bottom: 20px;
+
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .welcome h1 {
+            font-size: 42px;
+            margin-bottom: 12px;
+
+            background: linear-gradient(
+                90deg,
+                #ffffff,
+                #c084fc,
+                #f472b6
+            );
+
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .welcome p {
+            color: #9999aa;
+            font-size: 16px;
+        }
+
+        /* MESSAGE */
+
+        .message-row {
+            display: flex;
+            margin-bottom: 22px;
+            max-width: 850px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+        .message-row.ai {
+            justify-content: flex-start;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+
+            flex-shrink: 0;
+
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin-right: 12px;
+
+            background: linear-gradient(
+                135deg,
+                #7c3aed,
+                #ec4899
+            );
+        }
+
+        .bubble {
+            max-width: 70%;
+
+            padding: 14px 18px;
+
+            border-radius: 18px;
+
+            line-height: 1.6;
+
+            font-size: 15px;
+
+            white-space: pre-wrap;
+        }
+
+        .ai .bubble {
+            background: rgba(255,255,255,0.07);
+
+            border: 1px solid rgba(255,255,255,0.08);
+
+            border-top-left-radius: 5px;
+        }
+
+        .user .bubble {
+            background: linear-gradient(
+                135deg,
+                #7c3aed,
+                #a855f7
+            );
+
+            border-top-right-radius: 5px;
+        }
+
+        /* TYPING */
+
+        .typing {
+            display: none;
+            align-items: center;
+            gap: 5px;
+
+            padding: 15px 18px;
+
+            background: rgba(255,255,255,0.07);
+
+            border-radius: 18px;
+
+            width: 65px;
+        }
+
+        .typing span {
+            width: 6px;
+            height: 6px;
+
+            border-radius: 50%;
+
+            background: #aaa;
+
+            animation: typing 1.2s infinite;
+        }
+
+        .typing span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+
+            30% {
+                opacity: 1;
+                transform: translateY(-4px);
+            }
+        }
+
+        /* INPUT */
+
+        .input-wrapper {
+            position: fixed;
+
+            bottom: 0;
+            left: 260px;
+            right: 0;
+
+            padding: 20px;
+
+            background:
+                linear-gradient(
+                    transparent,
+                    #07070c 35%
+                );
+        }
+
+        .input-box {
+            max-width: 850px;
+
+            margin: auto;
+
+            display: flex;
+            align-items: center;
+
+            background: rgba(25,25,35,0.9);
+
+            border: 1px solid rgba(255,255,255,0.12);
+
+            border-radius: 18px;
+
+            padding: 8px;
+
+            box-shadow:
+                0 10px 40px rgba(0,0,0,0.35);
+
+            backdrop-filter: blur(20px);
+        }
+
+        .input-box input {
+            flex: 1;
+
+            border: none;
+            outline: none;
+
+            background: transparent;
+
+            color: white;
+
+            padding: 13px;
+
+            font-size: 15px;
+        }
+
+        .input-box input::placeholder {
+            color: #777787;
+        }
+
+        .send-button {
+            width: 44px;
+            height: 44px;
+
+            border: none;
+
+            border-radius: 13px;
+
+            background: linear-gradient(
+                135deg,
+                #8b5cf6,
+                #ec4899
+            );
+
+            color: white;
+
+            cursor: pointer;
+
+            font-size: 18px;
+
+            transition: 0.2s;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                display: none;
+            }
+
+            .input-wrapper {
+                left: 0;
+            }
+
+            .topbar {
+                padding: 0 18px;
+            }
+
+            .welcome {
+                margin-top: 50px;
+            }
+
+            .welcome h1 {
+                font-size: 32px;
+            }
+
+            .bubble {
+                max-width: 85%;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-icon">
+                😂
+            </div>
+
+            Masti AI
+
+        </div>
+
+        <button class="new-chat" onclick="newChat()">
+            ＋ New Chat
+        </button>
+
+        <div class="sidebar-bottom">
+
+            <strong>Masti AI</strong>
+
+            <br>
+
+            Your funny AI companion.
+
+            <br><br>
+
+            Powered by local AI
+
+        </div>
+
+    </aside>
+
+
+    <!-- CHAT -->
+
+    <main class="chat-area">
+
+        <header class="topbar">
+
+            <div class="status">
+
+                <div class="status-dot"></div>
+
+                <div>
+                    Masti AI
+                    <div class="status-text">
+                        Online • Ready to chat
+                    </div>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section id="messages" class="messages">
+
+            <div id="welcome" class="welcome">
+
+                <div class="welcome-emoji">
+                    😂
+                </div>
+
+                <h1>
+                    Welcome to Masti AI
+                </h1>
+
+                <p>
+                    Your AI friend for jokes, ideas,
+                    conversations and a little masti.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- INPUT -->
+
+        <div class="input-wrapper">
+
+            <div class="input-box">
+
+                <input
+                    id="message"
+                    type="text"
+                    placeholder="Talk to Masti AI..."
+                    autocomplete="off"
+                >
+
+                <button
+                    id="sendButton"
+                    class="send-button"
+                    onclick="sendMessage()"
+                >
+                    ➤
+                </button>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    const input =
+        document.getElementById("message");
+
+    const messages =
+        document.getElementById("messages");
+
+    const welcome =
+        document.getElementById("welcome");
+
+    const sendButton =
+        document.getElementById("sendButton");
+
+    let conversationId = null;
+
+
+    async function createConversation() {
+
+        const response =
+            await fetch("/new-chat", {
+                method: "POST"
+            });
+
+        if (!response.ok) {
+            throw new Error("Could not create a conversation");
+        }
+
+        const data = await response.json();
+        conversationId = data.conversation_id;
+
+    }
+
+
+    /* ENTER KEY */
+
+    input.addEventListener("keydown", function(event) {
+
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+
+    });
+
+
+    /* SEND MESSAGE */
+
+    async function sendMessage() {
+
+        const text =
+            input.value.trim();
+
+        if (!text) {
+            return;
+        }
+
+
+        welcome.style.display = "none";
+
+        addMessage(text, "user");
+
+        input.value = "";
+
+        sendButton.disabled = true;
+
+
+        /* TYPING */
+
+        const typing =
+            document.createElement("div");
+
+        typing.className = "message-row ai";
+
+        typing.innerHTML = `
+
+            <div class="avatar">
+                😂
+            </div>
+
+            <div class="typing" style="display:flex">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </div>
+
+        `;
+
+        messages.appendChild(typing);
+
+        scrollBottom();
+
+
+        try {
+
+            if (conversationId === null) {
+                await createConversation();
+            }
+
+            const response =
+                await fetch("/chat", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        conversation_id: conversationId,
+                        message: text
+                    })
+
+                });
+
+
+            if (!response.ok) {
+                throw new Error(`Chat request failed: ${response.status}`);
+            }
+
+            const data =
+                await response.json();
+
+
+            typing.remove();
+
+            addMessage(
+                data.response,
+                "ai"
+            );
+
+
+        } catch (error) {
+
+            typing.remove();
+
+            addMessage(
+                "Oops! 😅 Masti AI couldn't connect to the AI brain.",
+                "ai"
+            );
+
+            console.error(error);
+
+        }
+
+
+        sendButton.disabled = false;
+
+        input.focus();
+
+    }
+
+
+    /* ADD MESSAGE */
+
+    function addMessage(text, type) {
+
+        const row =
+            document.createElement("div");
+
+        row.className =
+            "message-row " + type;
+
+
+        if (type === "ai") {
+
+            row.innerHTML = `
+
+                <div class="avatar">
+                    😂
+                </div>
+
+                <div class="bubble">
+                    ${escapeHTML(text)}
+                </div>
+
+            `;
+
+        } else {
+
+            row.innerHTML = `
+
+                <div class="bubble">
+                    ${escapeHTML(text)}
+                </div>
+
+            `;
+
+        }
+
+
+        messages.appendChild(row);
+
+        scrollBottom();
+
+    }
+
+
+    /* SECURITY */
+
+    function escapeHTML(text) {
+
+        const div =
+            document.createElement("div");
+
+        div.textContent = text;
+
+        return div.innerHTML;
+
+    }
+
+
+    /* SCROLL */
+
+    function scrollBottom() {
+
+        messages.scrollTop =
+            messages.scrollHeight;
+
+    }
+
+
+    /* NEW CHAT */
+
+    async function newChat() {
+
+        messages.innerHTML = `
+
+            <div id="welcome" class="welcome">
+
+                <div class="welcome-emoji">
+                    😂
+                </div>
+
+                <h1>
+                    Welcome to Masti AI
+                </h1>
+
+                <p>
+                    Your AI friend for jokes,
+                    ideas, conversations
+                    and a little masti.
+                </p>
+
+            </div>
+
+        `;
+
+        conversationId = null;
+
+        try {
+            await createConversation();
+        } catch (error) {
+            addMessage(
+                "Oops! 😅 I couldn't start a new chat.",
+                "ai"
+            );
+            console.error(error);
+        }
+
+        input.focus();
+
+    }
+
+    createConversation().catch(function(error) {
+        console.error(error);
+    });
+
+</script>
+
+</body>
+
+</html>
