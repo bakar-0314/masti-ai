@@ -1,3 +1,6 @@
+import os
+from openai import OpenAI
+
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +17,11 @@ from database import (
 )
 
 app = FastAPI()
+
+client = OpenAI(
+    base_url="https://router.huggingface.co/v1",
+    api_key=os.getenv("HF_TOKEN")
+)
 
 # Allow the frontend to communicate with FastAPI even if opened
 # through VS Code Live Server or another local frontend server.
@@ -87,12 +95,12 @@ def chat(request: ChatRequest):
 
     print(f"CHAT: conversation={request.conversation_id}, message={request.message}")
 
-    response = ollama.chat(
-        model="llama3.2:3b",
+    response = client.chat.completions.create(
+        model="openai/gpt-oss-20b",
         messages=messages
     )
 
-    ai_message = response["message"]["content"]
+    ai_message = response.choices[0].message.content
 
     add_message(
         request.conversation_id,
