@@ -1,4 +1,9 @@
+import os
+
 import ollama
+from fastapi import FastAPI
+from pydantic import BaseModel
+import uvicorn
 
 SYSTEM_PROMPT = """
 You are Masti AI, a friendly and funny AI companion.
@@ -25,6 +30,11 @@ Rules:
 9. If the user wants to learn something, explain it clearly.
 """
 
+app = FastAPI()
+
+# In-memory conversation history. Kept simple since this app previously
+# only supported a single conversation at a time via the CLI's input()
+# loop, which does not work in a container without a TTY/stdin.
 messages = [
     {
         "role": "system",
@@ -32,21 +42,26 @@ messages = [
     }
 ]
 
-print("😂 Masti AI is ready!")
-print("Type 'exit' to stop the conversation.\n")
 
-while True:
+class ChatRequest(BaseModel):
+    message: str
 
-    user_message = input("You: ")
 
-    if user_message.lower() == "exit":
-        print("\n😂 Masti AI: Bye! Come back when boredom attacks again! 😎")
-        break
+class ChatResponse(BaseModel):
+    response: str
 
+
+@app.get("/")
+def health():
+    return {"status": "ok", "service": "masti-ai"}
+
+
+@app.post("/chat", response_model=ChatResponse)
+def chat(request: ChatRequest):
     messages.append(
         {
             "role": "user",
-            "content": user_message
+            "content": request.message
         }
     )
 
@@ -64,6 +79,9 @@ while True:
         }
     )
 
-    print("\n😂 Masti AI:")
-    print(ai_message)
-    print()
+    return {"response": ai_message}
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
