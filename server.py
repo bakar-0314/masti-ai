@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from openai import OpenAI
 from fastapi import FastAPI, HTTPException
@@ -17,18 +18,8 @@ from database import (
 
 app = FastAPI()
 
-
-def get_hf_client():
-    token = os.getenv("HF_TOKEN") or os.getenv("HF_API_KEY")
-    if not token:
-        raise HTTPException(
-            status_code=500,
-            detail="HF_TOKEN or HF_API_KEY is not set. Add it to your deployment environment before starting the app.",
-        )
-    return OpenAI(
-        base_url="https://router.huggingface.co/v1",
-        api_key=token,
-    )
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_FILE = BASE_DIR / "static" / "index.html"
 
 
 app.add_middleware(
@@ -43,6 +34,22 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def get_hf_client():
+    token = os.getenv("HF_TOKEN") or os.getenv("HF_API_KEY")
+
+    if not token:
+        raise HTTPException(
+            status_code=500,
+            detail="HF_TOKEN or HF_API_KEY is not set. Add it to your deployment environment.",
+        )
+
+    return OpenAI(
+        base_url="https://router.huggingface.co/v1",
+        api_key=token,
+    )
+
 
 SYSTEM_PROMPT = """
 You are Masti AI, a friendly and funny AI companion.
@@ -83,6 +90,25 @@ class NewChatResponse(BaseModel):
 init_database()
 
 
+@app.get("/")
+def home():
+    if not FRONTEND_FILE.exists():
+        raise HTTPException(
+            status_code=500,
+            detail="Frontend file not found: static/index.html",
+        )
+
+    return FileResponse(FRONTEND_FILE)
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "service": "masti-ai",
+    }
+
+
 @app.post("/new-chat", response_model=NewChatResponse)
 def new_chat():
     conversation_id = create_conversation()
@@ -91,33 +117,72 @@ def new_chat():
 
 @app.post("/chat")
 def chat(request: ChatRequest):
-    add_message(request.conversation_id, "user", request.message)
-
-    history = get_messages(request.conversation_id)
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    messages.extend(history)
-
-    print(f"CHAT: conversation={request.conversation_id}, message={request.message}")
-
-    client = get_hf_client()
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-20b",
-        messages=messages,
+    add_message(
+        request.conversation_id,
+        "user",
+        request.message,
     )
 
-    ai_message = response.choices[0].message.content
-    add_message(request.conversation_id, "assistant", ai_message)
+    history = get_messages(request.conversation_id)
+
+    messages = [
+        {
+            "role": "system",
+            "content": SYSTEM_PROMPT,
+        }
+    ]
+    messages.extend(history)
+
+    print(
+        f"CHAT: conversation={request.conversation_id}, "
+        f"message={request.message}"
+    )
+
+    client = get_hf_client()
+
+    try:
+        print("HF: Sending request to Hugging Face...")
+
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=messages,
+        )
+
+        ai_message = response.choices[0].message.content
+
+        print("HF: Response received successfully")
+
+    except Exception as e:
+        print(f"HF ERROR TYPE: {type(e).__name__}")
+        print(f"HF ERROR DETAILS: {str(e)}")
+
+        raise HTTPException(
+            status_code=502,
+            detail=f"Hugging Face error: {type(e).__name__}: {str(e)}"
+        )
+
+    if not ai_message:
+        raise HTTPException(
+            status_code=502,
+            detail="The AI returned an empty response.",
+        )
+
+    add_message(
+        request.conversation_id,
+        "assistant",
+        ai_message,
+    )
 
     print("CHAT: response generated")
+
     return {"response": ai_message}
-
-
-@app.get("/")
-def home():
-    return FileResponse("static/index.html")
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("server:app", host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
+    uvicorn.run(
+        "server:app",
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", "8000")),
+    )
