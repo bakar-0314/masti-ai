@@ -138,28 +138,27 @@ def chat(request: ChatRequest):
         f"message={request.message}"
     )
 
-    client = get_hf_client()
-
     try:
-        print("HF: Sending request to Hugging Face...")
+        print("HF: Connecting to Hugging Face...", flush=True)
+        client = get_hf_client()
 
+        print("HF: Sending request...", flush=True)
         response = client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=messages,
         )
 
         ai_message = response.choices[0].message.content
-
-        print("HF: Response received successfully")
+        print("HF: Response received", flush=True)
 
     except Exception as e:
-        print(f"HF ERROR TYPE: {type(e).__name__}")
-        print(f"HF ERROR DETAILS: {str(e)}")
+        print(f"HF ERROR TYPE: {type(e).__name__}", flush=True)
+        print(f"HF ERROR DETAILS: {str(e)}", flush=True)
 
         raise HTTPException(
             status_code=502,
-            detail=f"Hugging Face error: {type(e).__name__}: {str(e)}"
-        )
+            detail=f"{type(e).__name__}: {str(e)}",
+        ) from e
 
     if not ai_message:
         raise HTTPException(
