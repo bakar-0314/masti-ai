@@ -1,10 +1,5 @@
-import os
-
-import ollama
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
-import uvicorn
 
 SYSTEM_PROMPT = """
 You are Masti AI, a friendly and funny AI companion.
@@ -271,10 +266,13 @@ def chat(request: ChatRequest):
         }
     )
 
-    response = ollama.chat(
-        model="llama3.2:3b",
-        messages=messages
-    )
+    try:
+        response = ollama.chat(
+            model="llama3.2:3b",
+            messages=messages
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Ollama model service is unavailable: {exc}") from exc
 
     ai_message = response["message"]["content"]
 
