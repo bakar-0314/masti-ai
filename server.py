@@ -4,6 +4,7 @@ from pathlib import Path
 from openai import OpenAI
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -16,10 +17,20 @@ from database import (
     get_conversation,
 )
 
-app = FastAPI()
+
 
 BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_FILE = BASE_DIR / "static" / "index.html"
+
+app = FastAPI()
+
+app.mount(
+    "/static",
+    StaticFiles(directory=str(BASE_DIR / "static")),
+    name="static"
+)
+
+
 
 
 app.add_middleware(

@@ -1,5 +1,10 @@
+import os
+
+import ollama
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
 
 SYSTEM_PROMPT = """
 You are Masti AI, a friendly and funny AI companion.
