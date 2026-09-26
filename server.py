@@ -102,6 +102,18 @@ init_database()
 
 
 @app.get("/")
+@app.get("/debug-files")
+def debug_files():
+    static_dir = BASE_DIR / "static"
+
+    return {
+        "base_dir": str(BASE_DIR),
+        "static_exists": static_dir.exists(),
+        "static_files": [
+            str(p.relative_to(BASE_DIR))
+            for p in static_dir.rglob("*")
+        ] if static_dir.exists() else []
+    }
 def home():
     if not FRONTEND_FILE.exists():
         raise HTTPException(
