@@ -392,6 +392,51 @@
             color: #777787;
         }
 
+        .voice-button {
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 13px;
+            background: rgba(255,255,255,0.07);
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            transition: 0.2s;
+            margin-right: 6px;
+        }
+
+        .voice-button:hover {
+            background: rgba(255,255,255,0.14);
+            transform: scale(1.05);
+        }
+
+        .voice-button.listening {
+            background: #dc2626;
+            border-color: #f87171;
+            box-shadow: 0 0 16px rgba(220,38,38,0.5);
+        }
+
+        .voice-button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .voice-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #b7b7c5;
+            font-size: 12px;
+            white-space: nowrap;
+            margin: 0 8px;
+        }
+
+        .voice-toggle input {
+            accent-color: #a855f7;
+            cursor: pointer;
+        }
+
         .send-button {
             width: 44px;
             height: 44px;
@@ -554,6 +599,19 @@
                 >
 
                 <button
+                    id="micButton"
+                    class="voice-button"
+                    type="button"
+                    title="Speak to Masti AI"
+                    aria-label="Speak to Masti AI"
+                >🎤</button>
+
+                <label class="voice-toggle" title="Turn spoken AI replies on or off">
+                    <input id="voiceReplyToggle" type="checkbox">
+                    <span>Speak</span>
+                </label>
+
+                <button
                     id="sendButton"
                     class="send-button"
                     onclick="sendMessage()"
@@ -584,7 +642,92 @@
     const sendButton =
         document.getElementById("sendButton");
 
+    const micButton =
+        document.getElementById("micButton");
+
+    const voiceReplyToggle =
+        document.getElementById("voiceReplyToggle");
+
     let conversationId = null;
+
+    // Browser speech recognition is supported in Chrome and Edge.
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let recognition = null;
+    let isListening = false;
+
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = function() {
+            isListening = true;
+            micButton.classList.add("listening");
+            micButton.textContent = "⏹";
+            micButton.title = "Listening... click to stop";
+        };
+
+        recognition.onresult = function(event) {
+            const spokenText = event.results[0][0].transcript.trim();
+            if (spokenText) {
+                input.value = spokenText;
+                sendMessage();
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.error("Speech recognition error:", event.error);
+            if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+                addMessage("Please allow microphone access in your browser to use voice input.", "ai");
+            } else if (event.error !== "no-speech" && event.error !== "aborted") {
+                addMessage("I couldn't hear that clearly. Please try speaking again.", "ai");
+            }
+        };
+
+        recognition.onend = function() {
+            isListening = false;
+            micButton.classList.remove("listening");
+            micButton.textContent = "🎤";
+            micButton.title = "Speak to Masti AI";
+        };
+    } else {
+        micButton.disabled = true;
+        micButton.title = "Voice input is not supported in this browser. Try Chrome or Edge.";
+    }
+
+    micButton.addEventListener("click", function() {
+        if (!recognition) {
+            addMessage("Voice input isn't supported in this browser. Please use Chrome or Edge.", "ai");
+            return;
+        }
+
+        if (isListening) {
+            recognition.stop();
+        } else {
+            try {
+                recognition.start();
+            } catch (error) {
+                console.error("Could not start microphone:", error);
+            }
+        }
+    });
+
+    // Read AI replies aloud when the Speak checkbox is enabled.
+    function speakReply(text) {
+        if (!voiceReplyToggle.checked || !("speechSynthesis" in window)) {
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        window.speechSynthesis.speak(utterance);
+    }
 
 
     async function createConversation() {
@@ -703,6 +846,8 @@
                 "ai"
             );
 
+            speakReply(data.response);
+
 
         } catch (error) {
 
@@ -797,6 +942,13 @@
     /* NEW CHAT */
 
     async function newChat() {
+
+        if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+        }
+        if (recognition && isListening) {
+            recognition.stop();
+        }
 
         messages.innerHTML = `
 
