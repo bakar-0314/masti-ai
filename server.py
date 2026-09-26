@@ -101,7 +101,6 @@ class NewChatResponse(BaseModel):
 init_database()
 
 
-@app.get("/")
 @app.get("/debug-files")
 def debug_files():
     static_dir = BASE_DIR / "static"
@@ -114,6 +113,9 @@ def debug_files():
             for p in static_dir.rglob("*")
         ] if static_dir.exists() else []
     }
+
+
+@app.get("/")
 def home():
     if not FRONTEND_FILE.exists():
         raise HTTPException(
