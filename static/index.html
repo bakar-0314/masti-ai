@@ -529,6 +529,41 @@
 .voice-transcript{max-height:14vh}
 }
 
+    
+@media (max-width: 700px) {
+    .input-wrapper {
+        left: 0;
+        right: 0;
+        padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+    }
+    .input-box {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        gap: 4px;
+        padding: 6px;
+        border-radius: 16px;
+    }
+    .input-box input {
+        min-width: 0;
+        width: 100%;
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+    .voice-mode-launch {
+        flex: 0 0 auto;
+        margin: 0 2px;
+        padding: 9px 8px;
+        font-size: 12px;
+    }
+    .voice-button, .send-button {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
+        margin-right: 0;
+    }
+}
+
     </style>
 </head>
 
@@ -637,13 +672,7 @@
                     title="Speak to Masti AI"
                     aria-label="Speak to Masti AI"
                 >🎤</button>
-
-                <label class="voice-toggle" title="Turn spoken AI replies on or off">
-                    <input id="voiceReplyToggle" type="checkbox">
-                    <span>Speak</span>
-                </label>
-
-                <button
+<button
                     id="sendButton"
                     class="send-button"
                     onclick="sendMessage()"
@@ -683,11 +712,7 @@
 
     const micButton =
         document.getElementById("micButton");
-
-    const voiceReplyToggle =
-        document.getElementById("voiceReplyToggle");
-
-    let conversationId = null;
+let conversationId = null;
 
     // Browser speech recognition is supported in Chrome and Edge.
     const SpeechRecognition =
@@ -759,7 +784,7 @@
 
     // Read AI replies aloud when the Speak checkbox is enabled.
     function speakReply(text) {
-        if (!voiceReplyToggle.checked || !("speechSynthesis" in window)) {
+        if (!("speechSynthesis" in window)) {
             return;
         }
 
@@ -777,7 +802,7 @@
     const voiceModeButton=document.getElementById("voiceModeButton"), voiceOverlay=document.getElementById("voiceOverlay"), voiceStatus=document.getElementById("voiceStatus"), voiceTranscript=document.getElementById("voiceTranscript"), voiceStartButton=document.getElementById("voiceStartButton"), voiceStopButton=document.getElementById("voiceStopButton"), voiceEndButton=document.getElementById("voiceEndButton"), voiceCloseButton=document.getElementById("voiceCloseButton");
     let voiceModeActive=false;
     function setVoiceStatus(text,state=""){voiceStatus.textContent=text;voiceOverlay.classList.remove("listening","speaking");if(state)voiceOverlay.classList.add(state);}
-    function openVoiceMode(){voiceModeActive=true;voiceOverlay.classList.add("open");voiceTranscript.textContent="Ready when you are.";voiceReplyToggle.checked=true;setVoiceStatus("Tap Start talking and speak naturally.");voiceStartButton.disabled=!recognition;if(!recognition)setVoiceStatus("Voice recognition is not supported. Please use Chrome or Edge.");}
+    function openVoiceMode(){voiceModeActive=true;voiceOverlay.classList.add("open");voiceTranscript.textContent="Ready when you are.";setVoiceStatus("Tap Start talking and speak naturally.");voiceStartButton.disabled=!recognition;if(!recognition)setVoiceStatus("Voice recognition is not supported. Please use Chrome or Edge.");}
     function stopVoiceListening(){if(recognition&&isListening){try{recognition.stop()}catch(e){}}setVoiceStatus("Listening stopped.");}
     function closeVoiceMode(){voiceModeActive=false;if(recognition&&isListening){try{recognition.stop()}catch(e){}}if("speechSynthesis"in window)window.speechSynthesis.cancel();voiceOverlay.classList.remove("open","listening","speaking");setVoiceStatus("Voice mode closed.");}
     voiceModeButton.addEventListener("click",openVoiceMode);voiceCloseButton.addEventListener("click",closeVoiceMode);voiceEndButton.addEventListener("click",closeVoiceMode);voiceStopButton.addEventListener("click",stopVoiceListening);
