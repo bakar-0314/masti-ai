@@ -499,36 +499,6 @@
         }
 
 
-.voice-mode-launch{margin:0 8px 0 0;padding:10px 14px;border:1px solid #8b5cf6;border-radius:14px;background:linear-gradient(135deg,#6d28d9,#be185d);color:#fff;cursor:pointer;font-weight:600;white-space:nowrap}
-.voice-overlay{position:fixed;inset:0;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at 50% 42%,#30205d 0%,#111020 45%,#05050a 100%)}
-.voice-overlay.open{display:flex}.voice-overlay-top{position:absolute;top:24px;left:24px;right:24px;display:flex;justify-content:space-between;align-items:center}
-.voice-overlay-title{font-size:18px;font-weight:700}.voice-overlay-status{color:#c4b5fd;font-size:14px;margin-top:8px;text-align:center;min-height:22px}
-.voice-orb-wrap{width:min(60vw,300px);height:min(60vw,300px);display:grid;place-items:center;margin:30px 0}
-.voice-orb{width:190px;height:190px;max-width:65vw;max-height:65vw;border-radius:50%;background:radial-gradient(circle at 35% 28%,#f5d0fe 0%,#c084fc 18%,#7c3aed 48%,#312e81 75%);box-shadow:0 0 35px #8b5cf6,0 0 100px #8b5cf680,inset 0 0 35px #ffffff59;animation:orbBreathe 2.8s ease-in-out infinite}
-.voice-overlay.listening .voice-orb{animation:orbListen .9s ease-in-out infinite;box-shadow:0 0 50px #a78bfa,0 0 130px #a78bfa b3}
-.voice-overlay.speaking .voice-orb{animation:orbSpeak .55s ease-in-out infinite alternate;box-shadow:0 0 55px #ec4899,0 0 130px #ec4899a6}
-@keyframes orbBreathe{50%{transform:scale(1.06);filter:hue-rotate(12deg)}}@keyframes orbListen{50%{transform:scale(1.12);filter:brightness(1.25)}}@keyframes orbSpeak{to{transform:scale(1.14) rotate(8deg);filter:hue-rotate(30deg)}}
-.voice-transcript{max-width:650px;width:100%;max-height:22vh;overflow:auto;text-align:center;color:#e9d5ff;font-size:17px;line-height:1.5;margin-bottom:18px}
-.voice-controls{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap}.voice-control-btn{border:1px solid #ffffff33;border-radius:999px;padding:14px 20px;background:#ffffff1a;color:#fff;cursor:pointer;font-size:15px}.voice-control-btn.primary{background:#7c3aed;border-color:#a78bfa}.voice-control-btn.end{background:#be123c;border-color:#fb7185}
-@media(max-width:700px){
-.voice-mode-launch{padding:9px 10px;font-size:13px}
-.voice-overlay{justify-content:flex-start;overflow-y:auto;overscroll-behavior:contain;padding:calc(env(safe-area-inset-top, 0px) + 78px) 16px calc(env(safe-area-inset-bottom, 0px) + 20px);gap:8px}
-.voice-overlay-top{top:calc(env(safe-area-inset-top, 0px) + 14px);left:16px;right:16px}
-.voice-orb-wrap{width: min(48vw,210px);height:min(48vw,210px);margin:10px 0;flex:0 0 auto}
-.voice-orb{width:min(42vw,155px);height:min(42vw,155px)}
-.voice-overlay-status{font-size:14px;margin:4px 0}
-.voice-transcript{max-height:18vh;font-size:15px;margin:0 0 10px}
-.voice-controls{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-bottom:8px}
-.voice-control-btn{min-height:48px;padding:12px 10px;font-size:14px;width:100%}
-.voice-control-btn.end{grid-column:1 / -1}
-}
-@media(max-height:700px) and (max-width:700px){
-.voice-overlay{padding-top:72px}
-.voice-orb-wrap{width:130px;height:130px;margin:0}
-.voice-orb{width:105px;height:105px}
-.voice-transcript{max-height:14vh}
-}
-
     
 @media (max-width: 700px) {
     .input-wrapper {
@@ -540,31 +510,28 @@
         width: 100%;
         max-width: none;
         min-width: 0;
-        gap: 4px;
+        display: flex;
+        gap: 6px;
         padding: 6px;
         border-radius: 16px;
     }
     .input-box input {
+        flex: 1 1 auto;
         min-width: 0;
-        width: 100%;
+        width: 0;
         padding: 10px 8px;
         font-size: 14px;
-    }
-    .voice-mode-launch {
-        flex: 0 0 auto;
-        margin: 0 2px;
-        padding: 9px 8px;
-        font-size: 12px;
     }
     .voice-button, .send-button {
         width: 40px;
         height: 40px;
         flex: 0 0 40px;
-        margin-right: 0;
+        margin: 0;
+        font-size: 16px;
     }
 }
 
-    </style>
+</style>
 </head>
 
 
@@ -663,16 +630,20 @@
                     placeholder="Talk to Masti AI..."
                     autocomplete="off"
                 >
-
-                <button id="voiceModeButton" class="voice-mode-launch" type="button">🎙 Voice mode</button>
-                <button
+<button
                     id="micButton"
                     class="voice-button"
                     type="button"
                     title="Speak to Masti AI"
                     aria-label="Speak to Masti AI"
                 >🎤</button>
-<button
+
+                <label class="voice-toggle" title="Turn spoken AI replies on or off">
+                    <input id="voiceReplyToggle" type="checkbox">
+                    <span>Speak</span>
+                </label>
+
+                <button
                     id="sendButton"
                     class="send-button"
                     onclick="sendMessage()"
@@ -687,10 +658,7 @@
     </main>
 
 </div>
-
-
-<div id="voiceOverlay" class="voice-overlay" role="dialog" aria-modal="true" aria-label="Masti AI voice conversation">
-<div class="voice-overlay-top"><div><div class="voice-overlay-title">✨ Masti AI Voice</div><div style="color:#a5a5b5;font-size:13px;margin-top:4px">Voice conversation</div></div><button id="voiceCloseButton" class="voice-control-btn" type="button">✕ Close</button></div>
+<button id="voiceCloseButton" class="voice-control-btn" type="button">✕ Close</button></div>
 <div class="voice-orb-wrap"><div id="voiceOrb" class="voice-orb"></div></div>
 <div id="voiceStatus" class="voice-overlay-status">Tap Start talking and speak naturally.</div>
 <div id="voiceTranscript" class="voice-transcript">Your conversation will appear here.</div>
@@ -712,7 +680,11 @@
 
     const micButton =
         document.getElementById("micButton");
-let conversationId = null;
+
+    const voiceReplyToggle =
+        document.getElementById("voiceReplyToggle");
+
+    let conversationId = null;
 
     // Browser speech recognition is supported in Chrome and Edge.
     const SpeechRecognition =
@@ -732,14 +704,12 @@ let conversationId = null;
             micButton.classList.add("listening");
             micButton.textContent = "⏹";
             micButton.title = "Listening... click to stop";
-            if(voiceModeActive)setVoiceStatus("Listening… speak now.","listening");
         };
 
         recognition.onresult = function(event) {
             const spokenText = event.results[0][0].transcript.trim();
             if (spokenText) {
                 input.value = spokenText;
-                if(voiceModeActive){voiceTranscript.textContent="You: "+spokenText;setVoiceStatus("Thinking…");}
                 sendMessage();
             }
         };
@@ -784,7 +754,7 @@ let conversationId = null;
 
     // Read AI replies aloud when the Speak checkbox is enabled.
     function speakReply(text) {
-        if (!("speechSynthesis" in window)) {
+        if (!voiceReplyToggle.checked || !("speechSynthesis" in window)) {
             return;
         }
 
@@ -792,23 +762,10 @@ let conversationId = null;
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = "en-US";
         utterance.rate = 1;
-        utterance.pitch = 1;
-        if(voiceModeActive){utterance.onstart=()=>setVoiceStatus("Masti AI is speaking…","speaking");utterance.onend=()=>{if(voiceModeActive)setVoiceStatus("Your turn. Tap Start talking to continue.");};}
+        utterance.pitch = 1;;}
         window.speechSynthesis.speak(utterance);
     }
-
-
-
-    const voiceModeButton=document.getElementById("voiceModeButton"), voiceOverlay=document.getElementById("voiceOverlay"), voiceStatus=document.getElementById("voiceStatus"), voiceTranscript=document.getElementById("voiceTranscript"), voiceStartButton=document.getElementById("voiceStartButton"), voiceStopButton=document.getElementById("voiceStopButton"), voiceEndButton=document.getElementById("voiceEndButton"), voiceCloseButton=document.getElementById("voiceCloseButton");
-    let voiceModeActive=false;
-    function setVoiceStatus(text,state=""){voiceStatus.textContent=text;voiceOverlay.classList.remove("listening","speaking");if(state)voiceOverlay.classList.add(state);}
-    function openVoiceMode(){voiceModeActive=true;voiceOverlay.classList.add("open");voiceTranscript.textContent="Ready when you are.";setVoiceStatus("Tap Start talking and speak naturally.");voiceStartButton.disabled=!recognition;if(!recognition)setVoiceStatus("Voice recognition is not supported. Please use Chrome or Edge.");}
-    function stopVoiceListening(){if(recognition&&isListening){try{recognition.stop()}catch(e){}}setVoiceStatus("Listening stopped.");}
-    function closeVoiceMode(){voiceModeActive=false;if(recognition&&isListening){try{recognition.stop()}catch(e){}}if("speechSynthesis"in window)window.speechSynthesis.cancel();voiceOverlay.classList.remove("open","listening","speaking");setVoiceStatus("Voice mode closed.");}
-    voiceModeButton.addEventListener("click",openVoiceMode);voiceCloseButton.addEventListener("click",closeVoiceMode);voiceEndButton.addEventListener("click",closeVoiceMode);voiceStopButton.addEventListener("click",stopVoiceListening);
-    voiceStartButton.addEventListener("click",function(){if(!recognition||!voiceModeActive)return;try{recognition.start();setVoiceStatus("Listening… speak now.","listening")}catch(e){setVoiceStatus("Ready. Tap Start talking again.");}});
-
-    async function createConversation() {
+async function createConversation() {
 
         const response =
             await fetch("/new-chat", {
@@ -925,7 +882,6 @@ let conversationId = null;
             );
 
             speakReply(data.response);
-            if(voiceModeActive){voiceTranscript.textContent+="\\n\\nMasti AI: "+data.response;if(!voiceReplyToggle.checked)setVoiceStatus("Masti AI replied. Tap Start talking to continue.");}
 
 
         } catch (error) {
@@ -934,7 +890,6 @@ let conversationId = null;
 
             const friendlyError="Oops! 😅 Masti AI couldn't connect to the AI brain. Please check the server connection and try again.";
             addMessage(friendlyError,"ai");
-            if(voiceModeActive){voiceTranscript.textContent+="\\n\\nMasti AI: "+friendlyError;setVoiceStatus("Connection error. Please try again.");}
 
             console.error(error);
 
