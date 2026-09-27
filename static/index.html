@@ -760,6 +760,16 @@ let conversationId = null;
             micButton.title = "Speak to Masti AI";
             if(voiceModeActive && voiceStatus.textContent.startsWith("Listening"))setVoiceStatus("Ready. Tap Start talking when you're ready.");
         };
+        <button id="micButton" class="mic-button" aria-label="Voice input">
+    <svg viewBox="0 0 24 24" width="24" height="24"
+         fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round"
+         stroke-linejoin="round">
+        <rect x="9" y="3" width="6" height="12" rx="3"/>
+        <path d="M5 11a7 7 0 0 0 14 0"/>
+        <path d="M12 18v3M9 21h6"/>
+    </svg>
+</button>
     } else {
         micButton.disabled = true;
         micButton.title = "Voice input is not supported in this browser. Try Chrome or Edge.";
@@ -793,7 +803,20 @@ let conversationId = null;
         utterance.lang = "en-US";
         utterance.rate = 1;
         utterance.pitch = 1;
-        if(voiceModeActive){utterance.onstart=()=>setVoiceStatus("Masti AI is speaking…","speaking");utterance.onend=()=>{if(voiceModeActive)setVoiceStatus("Your turn. Tap Start talking to continue.");};}
+        if(voiceModeActive){utterance.onend = () => {
+    if (voiceModeActive) {
+        setVoiceStatus("Your turn. Listening...", "listening");
+
+        // Start listening for the next spoken message.
+        if (recognition && !isListening) {
+            try {
+                recognition.start();
+            } catch (error) {
+                setVoiceStatus("Tap Start talking to continue.");
+            }
+        }
+    }
+};}
         window.speechSynthesis.speak(utterance);
     }
 
@@ -924,8 +947,11 @@ let conversationId = null;
                 "ai"
             );
 
-            speakReply(data.response);
-            if(voiceModeActive){voiceTranscript.textContent+="\\n\\nMasti AI: "+data.response;if(!voiceReplyToggle.checked)setVoiceStatus("Masti AI replied. Tap Start talking to continue.");}
+           // Only speak when the dedicated voice assistant is active.
+if (voiceModeActive) {
+    speakReply(data.response);
+}
+            if(voiceModeActive){voiceTranscript.txtContent+="\\n\\nMasti AI: "+data.response;if(!voiceReplyToggle.checked)setVoiceStatus("Masti AI replied. Tap Start talking to continue.");}
 
 
         } catch (error) {
